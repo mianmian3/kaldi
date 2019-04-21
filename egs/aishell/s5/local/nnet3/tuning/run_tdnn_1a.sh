@@ -20,7 +20,8 @@ initial_effective_lrate=0.0015
 final_effective_lrate=0.00015
 num_epochs=4
 num_jobs_initial=2
-num_jobs_final=12
+#num_jobs_final=12
+num_jobs_final=6
 remove_egs=true
 
 # feature options
