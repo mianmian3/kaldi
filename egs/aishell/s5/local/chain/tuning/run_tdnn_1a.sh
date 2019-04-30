@@ -3,11 +3,13 @@
 # This script is based on run_tdnn_7h.sh in swbd chain recipe.
 
 set -e
+#set -v 
 
 # configs for 'chain'
 affix=
 stage=0
 train_stage=-10
+test_stage=-10
 get_egs_stage=-10
 dir=exp/chain/tdnn_1a  # Note: _sp will get added to this
 decode_iter=
@@ -174,11 +176,40 @@ fi
 graph_dir=$dir/graph
 if [ $stage -le 13 ]; then
   for test_set in dev test; do
-    steps/nnet3/decode.sh --acwt 1.0 --post-decode-acwt 10.0 \
+    steps/nnet3/decode.sh  --stage ${test_stage} --acwt 1.0 --post-decode-acwt 10.0 \
       --nj 10 --cmd "$decode_cmd" \
       --online-ivector-dir exp/nnet3/ivectors_$test_set \
       $graph_dir data/${test_set}_hires $dir/decode_${test_set} || exit 1;
   done
 fi
+
+
+#####################################################################################
+# add from run_tdnn_2a.sh
+if [ $stage -le 14 ]; then
+  steps/online/nnet3/prepare_online_decoding.sh --mfcc-config conf/mfcc_hires.conf \
+    --add-pitch true \
+    $lang exp/nnet3/extractor "$dir" ${dir}_online || exit 1;
+fi
+
+dir=${dir}_online
+if [ $stage -le 15 ]; then
+  for test_set in dev test; do
+    steps/online/nnet3/decode.sh --acwt 1.0 --post-decode-acwt 10.0 \
+      --nj 10 --cmd "$decode_cmd" \
+      --config conf/decode.config \
+      $graph_dir data/${test_set}_hires_online $dir/decode_${test_set} || exit 1;
+  done
+fi
+
+if [ $stage -le 16 ]; then
+  for test_set in dev test; do
+    steps/online/nnet3/decode.sh --acwt 1.0 --post-decode-acwt 10.0 \
+      --nj 10 --cmd "$decode_cmd" --per-utt true \
+      --config conf/decode.config \
+      $graph_dir data/${test_set}_hires_online $dir/decode_${test_set}_per_utt || exit 1;
+  done
+fi
+
 
 exit;

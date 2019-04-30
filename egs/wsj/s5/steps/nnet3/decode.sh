@@ -119,6 +119,33 @@ if [ -f $srcdir/frame_subsampling_factor ]; then
   frame_subsampling_opt="--frame-subsampling-factor=$(cat $srcdir/frame_subsampling_factor)"
 fi
 
+
+#############################################################################################
+echo "#############################################################################"
+echo "#############################################################################"
+echo "#############################################################################"
+echo "#############################################################################"
+echo "#############################################################################"
+echo "#############################################################################"
+echo "#############################################################################"
+echo "#############################################################################"
+echo "#####################################print all the options"
+echo "nnet3-latgen-faster$thread_string $ivector_opts $frame_subsampling_opt"
+echo "--frames-per-chunk=$frames_per_chunk"
+echo "--extra-left-context=$extra_left_context"
+echo "--extra-right-context=$extra_right_context"
+echo "--extra-left-context-initial=$extra_left_context_initial"
+echo "--extra-right-context-final=$extra_right_context_final"
+echo "--minimize=$minimize --max-active=$max_active --min-active=$min_active--beam=$beam "
+echo "--lattice-beam=$lattice_beam --acoustic-scale=$acwt --allow-partial=true"
+echo "--word-symbol-table=$graphdir/words.txt"
+echo "$model"
+echo $graphdir/HCLG.fst
+echo $feats
+echo $lat_wspecifier
+exit -1
+##############################################################################################
+
 if [ $stage -le 1 ]; then
   $cmd $queue_opt JOB=1:$nj $dir/log/decode.JOB.log \
     nnet3-latgen-faster$thread_string $ivector_opts $frame_subsampling_opt \

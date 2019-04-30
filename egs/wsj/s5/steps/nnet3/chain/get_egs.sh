@@ -15,6 +15,8 @@
 # frame-range that it was in in the alignment, extended by a certain margin.
 #
 
+set -v
+echo "######################################## in get_egs.sh, already set -v"
 
 # Begin configuration section.
 cmd=run.pl
@@ -128,6 +130,12 @@ chaindir=$2
 latdir=$3
 dir=$4
 
+echo "################### data path is ${data}"
+echo "################### chaindir path is ${chaindir}"
+echo "################### latdir path is ${latdir}"
+echo "################### dir path is ${dir}"
+
+
 # Check some files.
 [ ! -z "$online_ivector_dir" ] && \
   extra_files="$online_ivector_dir/ivector_online.scp $online_ivector_dir/ivector_period"
@@ -151,6 +159,13 @@ mkdir -p $dir/log $dir/info
 # Get list of validation utterances.
 frame_shift=$(utils/data/get_frame_shift.sh $data) || exit 1
 
+
+
+echo "############## generate valid uttlist"
+echo "############## num_utts_subset is ${num_utts_subset}"
+echo "############## data is ${data}"
+echo "############## data is ${data}"
+
 if [ -f $data/utt2uniq ]; then
   # Must hold out all augmented versions of the same utterance.
   echo "$0: File $data/utt2uniq exists, so ensuring the hold-out set" \
@@ -167,13 +182,26 @@ else
     utils/shuffle_list.pl 2>/dev/null | \
     head -$num_utts_subset > $dir/valid_uttlist
 fi
+
+echo "############## len_valid_uttlist dir: $dir/valid_uttlist"
+
 len_valid_uttlist=$(wc -l < $dir/valid_uttlist)
 
 awk '{print $1}' $data/utt2spk | \
    utils/filter_scp.pl --exclude $dir/valid_uttlist | \
    utils/shuffle_list.pl 2>/dev/null | \
    head -$num_utts_subset > $dir/train_subset_uttlist
+
+
+echo "############### len_trainsub_uttlist dir: $dir/train_subset_uttlist"
+
 len_trainsub_uttlist=$(wc -l <$dir/train_subset_uttlist)
+
+
+# utterences number check failed
+echo "len_valid_uttlist : ${len_valid_uttlist}"
+echo "len_trainsub_uttlist : ${len_trainsub_uttlist}"
+echo "num_utts_subset : ${num_utts_subset}" 
 
 if [[ $len_valid_uttlist -lt $num_utts_subset ||
       $len_trainsub_uttlist -lt $num_utts_subset ]]; then
