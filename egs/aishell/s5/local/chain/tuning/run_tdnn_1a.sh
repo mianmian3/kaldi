@@ -31,6 +31,8 @@ xent_regularize=0.1
 # End configuration section.
 echo "$0 $@"  # Print the command line for logging
 
+set -v
+
 . ./cmd.sh
 . ./path.sh
 . ./utils/parse_options.sh
@@ -184,32 +186,32 @@ if [ $stage -le 13 ]; then
 fi
 
 
-#####################################################################################
-# add from run_tdnn_2a.sh
-if [ $stage -le 14 ]; then
-  steps/online/nnet3/prepare_online_decoding.sh --mfcc-config conf/mfcc_hires.conf \
-    --add-pitch true \
-    $lang exp/nnet3/extractor "$dir" ${dir}_online || exit 1;
-fi
-
-dir=${dir}_online
-if [ $stage -le 15 ]; then
-  for test_set in dev test; do
-    steps/online/nnet3/decode.sh --acwt 1.0 --post-decode-acwt 10.0 \
-      --nj 10 --cmd "$decode_cmd" \
-      --config conf/decode.config \
-      $graph_dir data/${test_set}_hires_online $dir/decode_${test_set} || exit 1;
-  done
-fi
-
-if [ $stage -le 16 ]; then
-  for test_set in dev test; do
-    steps/online/nnet3/decode.sh --acwt 1.0 --post-decode-acwt 10.0 \
-      --nj 10 --cmd "$decode_cmd" --per-utt true \
-      --config conf/decode.config \
-      $graph_dir data/${test_set}_hires_online $dir/decode_${test_set}_per_utt || exit 1;
-  done
-fi
+######################################################################################
+## add from run_tdnn_2a.sh
+#if [ $stage -le 14 ]; then
+#  steps/online/nnet3/prepare_online_decoding.sh --mfcc-config conf/mfcc_hires.conf \
+#    --add-pitch true \
+#    $lang exp/nnet3/extractor "$dir" ${dir}_online || exit 1;
+#fi
+#
+#dir=${dir}_online
+#if [ $stage -le 15 ]; then
+#  for test_set in dev test; do
+#    steps/online/nnet3/decode.sh --acwt 1.0 --post-decode-acwt 10.0 \
+#      --nj 10 --cmd "$decode_cmd" \
+#      --config conf/decode.config \
+#      $graph_dir data/${test_set}_hires_online $dir/decode_${test_set} || exit 1;
+#  done
+#fi
+#
+#if [ $stage -le 16 ]; then
+#  for test_set in dev test; do
+#    steps/online/nnet3/decode.sh --acwt 1.0 --post-decode-acwt 10.0 \
+#      --nj 10 --cmd "$decode_cmd" --per-utt true \
+#      --config conf/decode.config \
+#      $graph_dir data/${test_set}_hires_online $dir/decode_${test_set}_per_utt || exit 1;
+#  done
+#fi
 
 
 exit;

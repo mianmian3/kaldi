@@ -12,33 +12,24 @@
 # Caution: some of the graph creation steps use quite a bit of memory, so you
 # should run this on a machine that has sufficient memory.
 
-in_docker_data_path=/data/aishell/data_download
-#out_docker_data_path=/home/users/mamian01/mamian/work/ASR/data/aishell/data_download
-out_docker_data_path=/home/gsadmin/data/aishell/data_download
+data=/home/users/mamian01/data/data_combine
 
-#data=/export/a05/xna/data
-data=$out_docker_data_path
-data_url=www.openslr.org/resources/33
 
 . ./cmd.sh
 . ./path.sh
 . ./utils/parse_options.sh
 
-
-para=60
+para=120
+para_small=80
 #set -v
-set -c
 
-####local/download_and_untar.sh $data $data_url data_aishell || exit 1;
-####local/download_and_untar.sh $data $data_url resource_aishell || exit 1;
-#
+
 ## Lexicon Preparation,
-#local/aishell_prepare_dict.sh $data/resource_aishell || exit 1;
-#
+#local/aishell_prepare_dict.sh $data/resource || exit 1;
 #
 ## Data Preparation,
-#echo "local/aishell_data_prep.sh $data/data_aishell/wav $data/data_aishell/transcript || exit 1"
-#local/aishell_data_prep.sh $data/data_aishell/wav $data/data_aishell/transcript || exit 1;
+##local/aishell_data_prep.sh $data/wav $data/transcript_final/text.txt || exit 1;
+#local/aishell_data_prep.sh $data/wav $data/transcript_final/text.txt_3 || exit 1;
 #
 ## Phone Sets, questions, L compilation
 #utils/prepare_lang.sh --position-dependent-phones false data/local/dict \
@@ -62,17 +53,19 @@ set -c
 #  utils/fix_data_dir.sh data/$x || exit 1;
 #done
 #
-# steps/train_mono.sh --cmd "$train_cmd" --nj $para \
-#   data/train data/lang exp/mono || exit 1;
-# echo "#################### train_mono done!"
 #
 #
-# Monophone decoding
-# utils/mkgraph.sh data/lang_test exp/mono exp/mono/graph || exit 1;
-# steps/decode.sh --cmd "$decode_cmd" --config conf/decode.config --nj $para \
-#   exp/mono/graph data/dev exp/mono/decode_dev
-# steps/decode.sh --cmd "$decode_cmd" --config conf/decode.config --nj $para \
-#   exp/mono/graph data/test exp/mono/decode_test
+#steps/train_mono.sh --cmd "$train_cmd" --nj $para \
+#  data/train data/lang exp/mono || exit 1;
+#echo "#################### train_mono done!"
+#
+#
+## Monophone decoding
+#utils/mkgraph.sh data/lang_test exp/mono exp/mono/graph || exit 1;
+#steps/decode.sh --cmd "$decode_cmd" --config conf/decode.config --nj $para \
+#  exp/mono/graph data/dev exp/mono/decode_dev
+#steps/decode.sh --cmd "$decode_cmd" --config conf/decode.config --nj $para \
+#  exp/mono/graph data/test exp/mono/decode_test
 #
 ## Get alignments from monophone system.
 #steps/align_si.sh --cmd "$train_cmd" --nj $para \
@@ -147,24 +140,28 @@ set -c
 #steps/decode_fmllr.sh --cmd "$decode_cmd" --nj $para --config conf/decode.config \
 #   exp/tri5a/graph data/test exp/tri5a/decode_test || exit 1;
 #
-#
 #steps/align_fmllr.sh --cmd "$train_cmd" --nj $para \
 #  data/train data/lang exp/tri5a exp/tri5a_ali || exit 1;
+#
 
+
+
+#
 ## nnet3
-#local/nnet3/run_tdnn.sh
-
-
-## chain
-local/chain/run_tdnn.sh
+#local/nnet3/run_tdnn.sh --stage 8  --train_stage 52
+#
+# chain
+local/chain/run_tdnn.sh   --stage 11 --train_stage 51
 #local/chain/run_tdnn.sh --stage 13 --train_stage -3 --test_stage 15
 
 
+######################################################################we can ignore them
 ## add online part to run_tdnn_1a.sh and evaluate tdnn model
 #local/chain/tuning/run_tdnn_1a.sh --stage 14 --train_stage 20
-
-# use the run_tdnn_2a.sh to train and evaluate tdnn model
+#
+## use the run_tdnn_2a.sh to train and evaluate tdnn model
 #local/chain/tuning/run_tdnn_2a.sh 
+#########################################################################################
 
 ## getting results (see RESULTS file)
 # for x in exp/*/decode_test; do [ -d $x ] && grep WER $x/cer_* | utils/best_wer.sh; done 2>/dev/null

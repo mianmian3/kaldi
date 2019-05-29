@@ -143,7 +143,7 @@ echo "$model"
 echo $graphdir/HCLG.fst
 echo $feats
 echo $lat_wspecifier
-exit -1
+#exit -1
 ##############################################################################################
 
 if [ $stage -le 1 ]; then

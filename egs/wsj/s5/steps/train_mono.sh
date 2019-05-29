@@ -76,6 +76,7 @@ if [ $stage -le -3 ]; then
     echo "error getting feature dimension"
     exit 1;
   fi
+  echo "############################$cmd JOB=1 $dir/log/init.log"
   $cmd JOB=1 $dir/log/init.log \
     gmm-init-mono $shared_phones_opt "--train-feats=$feats subset-feats --n=10 ark:- ark:-|" $lang/topo $feat_dim \
     $dir/0.mdl $dir/tree || exit 1;
