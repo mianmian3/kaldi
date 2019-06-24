@@ -57,6 +57,7 @@ class TcpServer {
   bool WriteLn(const std::string &msg, const std::string &eol = "\n"); // write line to accepted client
 
   void Disconnect();
+  size_t Get_has_read();
 
  private:
   struct ::sockaddr_in h_addr_;
@@ -127,7 +128,8 @@ int main(int argc, char *argv[]) {
     LatticeFasterDecoderConfig decoder_opts;
     OnlineEndpointConfig endpoint_opts;
 
-    BaseFloat chunk_length_secs = 0.18;
+    //BaseFloat chunk_length_secs = 0.18;
+    BaseFloat chunk_length_secs = 200;
     BaseFloat output_period = 1;
     BaseFloat samp_freq = 16000.0;
     int port_num = 5050;
@@ -204,6 +206,8 @@ int main(int argc, char *argv[]) {
 
       server.Accept();
 
+      KALDI_LOG << "################## it's a new connection \n";
+
       int32 samp_count = 0;// this is used for output refresh rate
       size_t chunk_len = static_cast<size_t>(chunk_length_secs * samp_freq);
       int32 check_period = static_cast<int32>(samp_freq * output_period);
@@ -229,6 +233,9 @@ int main(int argc, char *argv[]) {
 
         while (true) {
           eos = !server.ReadChunk(chunk_len);
+          KALDI_LOG << "read chunk data \n";
+          KALDI_LOG << "has read data count" << server.Get_has_read() << "\n";
+
 
           if (eos) {
             feature_pipeline.InputFinished();
@@ -259,6 +266,7 @@ int main(int argc, char *argv[]) {
                                                 frame_offset * decodable_opts.frame_subsampling_factor);
           }
 
+          /*
           decoder.AdvanceDecoding();
 
           if (samp_count > check_count) {
@@ -280,6 +288,7 @@ int main(int argc, char *argv[]) {
             server.WriteLn(msg);
             break;
           }
+          */
         }
       }
     }
@@ -296,7 +305,8 @@ TcpServer::TcpServer(int read_timeout) {
   client_desc_ = -1;
   samp_buf_ = NULL;
   buf_len_ = 0;
-  read_timeout_ = 1000 * read_timeout;
+  //read_timeout_ = 1000 * read_timeout;
+  read_timeout_ = read_timeout;
 }
 
 bool TcpServer::Listen(int32 port) {
@@ -378,9 +388,11 @@ bool TcpServer::ReadChunk(size_t len) {
   size_t to_read = len;
   has_read_ = 0;
   while (to_read > 0) {
+    KALDI_LOG << "to_read > 0 \n";
     poll_ret = poll(client_set_, 1, read_timeout_);
     if (poll_ret == 0) {
       KALDI_WARN << "Socket timeout! Disconnecting...";
+      KALDI_LOG << " poll_ret == 0, break \n";
       break;
     }
     if (client_set_[0].revents != POLLIN) {
@@ -394,6 +406,9 @@ bool TcpServer::ReadChunk(size_t len) {
     }
     to_read -= ret / sizeof(int16);
     has_read_ += ret / sizeof(int16);
+
+    KALDI_LOG << " has_read increase \n";
+
   }
 
   return has_read_ > 0;
@@ -439,4 +454,12 @@ void TcpServer::Disconnect() {
     client_desc_ = -1;
   }
 }
+
+size_t  TcpServer::Get_has_read(){
+    return has_read_;
+}
+
+
+
+
 }  // namespace kaldi

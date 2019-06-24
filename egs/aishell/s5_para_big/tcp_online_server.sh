@@ -28,7 +28,7 @@ nohup ../../../src/online2bin/online2-tcp-nnet3-decode-faster \
     --lattice-beam=6.0 \
     --acoustic-scale=1.0 \
     --port-num=5051 \
-    --read-timeout=1 \
+    --read-timeout=20 \
     exp/chain/tdnn_1a_sp/final.mdl \
     exp/chain/tdnn_1a_sp/graph/HCLG.fst \
     data/lang/words.txt 2> log/online2-tcp-nnet3-decode-faster.log  & 
